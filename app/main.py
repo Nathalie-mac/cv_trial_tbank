@@ -8,7 +8,13 @@ from ultralytics import YOLO
 import io
 from PIL import Image
 
-model = YOLO('models/trained.pt')
+try:
+    model = YOLO('models\\trained.pt')
+    model_loaded = True
+except Exception as e:
+    print(f"Ошибка загрузки модели: {e}")
+    model = None
+    model_loaded = False
 
 class BoundingBox(BaseModel):
     x_min: int = Field(..., description="Левая координата", ge=0)
