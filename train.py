@@ -1,14 +1,14 @@
 from ultralytics import YOLO
-
-
-def train_model():
-    yaml_content = """
-path: /app/dataset
+yaml_content = """
+path: dataset
 train: images/train
 val: images/val
 names:
   0: tbank-logo
 """
+
+def train_model():
+
 
     with open('dataset.yaml', 'w') as f:
         f.write(yaml_content)
