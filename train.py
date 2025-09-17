@@ -1,4 +1,5 @@
 from ultralytics import YOLO
+import os
 yaml_content = """
 path: dataset
 train: images/train
@@ -27,7 +28,11 @@ def train_model():
     )
 
 
-    model.save('models/trained.pt')
+    best_model_path = 'runs/detect/train/weights/best.pt'
+    if os.path.exists(best_model_path):
+        import shutil
+        shutil.copy(best_model_path, 'models/trained.pt')
+        print("Модель сохранена как models/trained.pt")
     print("finally trained omg")
 
 
