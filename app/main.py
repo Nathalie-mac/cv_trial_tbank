@@ -2,12 +2,13 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import List, Optional
-import cv2
+#import cv2
 import numpy as np
 from ultralytics import YOLO
 import io
 from PIL import Image
 
+model = YOLO('models/trained.pt')
 
 class BoundingBox(BaseModel):
     x_min: int = Field(..., description="Левая координата", ge=0)
@@ -44,7 +45,33 @@ async def detect_logo(file: UploadFile = File(...)):
         image = Image.open(io.BytesIO(contents))
         image_np = np.array(image)
 
+        #rgb to bgr
+        if image_np.shape[-1] == 3:
+            image_np = image_np[:, :, ::-1]
+
         detections = []
+
+
+        if model is not None:
+            results = model(image_np)
+
+            for result in results:
+                if result.boxes is not None:
+                    for box in result.boxes:
+                        # bounding box
+                        x_min, y_min, x_max, y_max = box.xyxy[0].cpu().numpy()
+                        confidence = box.conf[0].cpu().numpy()
+
+                        # filter
+                        if confidence > 0.5:
+                            detections.append(Detection(bbox=BoundingBox(
+                                x_min=int(x_min),
+                                y_min=int(y_min),
+                                x_max=int(x_max),
+                                y_max=int(y_max)
+                            )))
+        else:
+            print("ошибка при загрузке модели")
 
         return DetectionResponse(detections=detections)
 
